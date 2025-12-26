@@ -29,6 +29,7 @@ def query_gemini(prompt: str, messages: list, *, api_key=""):
 def parse_args():
     parser = argparse.ArgumentParser(description="Chatbot")
     parser.add_argument("user_prompt", type=str, help="User prompt")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
     args = parser.parse_args()
     return args
 
@@ -43,10 +44,12 @@ def main():
         messages,
         api_key=api_key,
     )
-    print(
-        f"Prompt tokens: {usage_metadata.prompt_token_count}\n"
-        f"Response tokens: {usage_metadata.candidates_token_count}"
-    )
+    if args.verbose:
+        print(
+            f"User prompt: {args.user_prompt}\n"
+            f"Prompt tokens: {usage_metadata.prompt_token_count}\n"
+            f"Response tokens: {usage_metadata.candidates_token_count}"
+        )
     print(f"Response: {response}")
 
 
