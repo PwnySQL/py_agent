@@ -13,6 +13,12 @@ def main():
         model="gemini-2.5-flash",
         contents="Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.",
     )
+    if resp.usage_metadata is None:
+        raise RuntimeError("Cannot access gemini response metadata! API call failed")
+    print(
+        f"Prompt tokens: {resp.usage_metadata.prompt_token_count}\n"
+        f"Response tokens: {resp.usage_metadata.candidates_token_count}"
+    )
     print(f"Response: {resp.text}")
 
 
