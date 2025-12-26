@@ -1,3 +1,4 @@
+import argparse
 import os
 from dotenv import load_dotenv
 from google import genai
@@ -23,10 +24,19 @@ def query_gemini(content: str, *, api_key=""):
     return usage_metadata, resp.text
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Chatbot")
+    parser.add_argument("user_prompt", type=str, help="User prompt")
+    args = parser.parse_args()
+    return args
+
+
 def main():
+    args = parse_args()
+
     api_key = load_api_key()
     usage_metadata, response = query_gemini(
-        "Why is Boot.dev such a great place to learn backend development? Use one paragraph maximum.",
+        args.user_prompt,
         api_key=api_key,
     )
     print(
