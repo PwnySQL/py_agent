@@ -1,8 +1,11 @@
 import argparse
 import os
+
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+
+import prompts
 
 
 def load_api_key() -> str:
@@ -19,6 +22,7 @@ def query_gemini(prompt: str, messages: list, *, api_key=""):
     resp = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=messages,
+        config=types.GenerateContentConfig(system_instruction=prompts.system_prompt),
     )
     if resp.usage_metadata is None:
         raise RuntimeError("Cannot access gemini response metadata! API call failed")
