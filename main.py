@@ -6,6 +6,7 @@ from google import genai
 from google.genai import types
 
 import prompts
+from agent_functions import available_functions
 
 
 def load_api_key() -> str:
@@ -19,15 +20,24 @@ def load_api_key() -> str:
 def query_gemini(prompt: str, messages: list, *, api_key=""):
     client = genai.Client(api_key=api_key)
     messages.append(types.Content(role="user", parts=[types.Part(text=prompt)]))
+
     resp = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=messages,
-        config=types.GenerateContentConfig(system_instruction=prompts.system_prompt),
+        config=types.GenerateContentConfig(
+            tools=[available_functions], system_instruction=prompts.system_prompt
+        ),
     )
+
     if resp.usage_metadata is None:
         raise RuntimeError("Cannot access gemini response metadata! API call failed")
     usage_metadata = resp.usage_metadata
-    return usage_metadata, resp.text
+    function_calls = ""
+    if resp.function_calls is not None:
+        for call in resp.function_calls:
+            function_calls += f"Calling function: {call.name}({call.args})"
+
+    return usage_metadata, resp.text, function_calls
 
 
 def parse_args():
@@ -43,7 +53,7 @@ def main():
 
     api_key = load_api_key()
     messages = []
-    usage_metadata, response = query_gemini(
+    usage_metadata, response, function_calls = query_gemini(
         args.user_prompt,
         messages,
         api_key=api_key,
@@ -55,6 +65,7 @@ def main():
             f"Response tokens: {usage_metadata.candidates_token_count}"
         )
     print(f"Response: {response}")
+    print(function_calls)
 
 
 if __name__ == "__main__":
