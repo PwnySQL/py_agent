@@ -6,7 +6,7 @@ from google import genai
 from google.genai import types
 
 import prompts
-from agent_functions import available_functions
+from agent_functions import available_functions, call_function
 
 
 def load_api_key() -> str:
@@ -17,7 +17,9 @@ def load_api_key() -> str:
     return api_key
 
 
-def query_gemini(prompt: str, messages: list, *, api_key=""):
+def query_gemini(
+    prompt: str, messages: list, *, api_key: str = "", verbose: bool = False
+):
     client = genai.Client(api_key=api_key)
     messages.append(types.Content(role="user", parts=[types.Part(text=prompt)]))
 
@@ -34,9 +36,28 @@ def query_gemini(prompt: str, messages: list, *, api_key=""):
     usage_metadata = gen_content_response.usage_metadata
 
     response = ""
+    function_call_results = []
     if gen_content_response.function_calls is not None:
         for call in gen_content_response.function_calls:
-            response += f"Calling function: {call.name}({call.args})"
+            function_call_result = call_function(call, verbose=verbose)
+            if not function_call_result.parts:
+                raise RuntimeError(
+                    "Function call result must have a non-empty parts list"
+                )
+            if not function_call_result.parts[0].function_response:
+                raise RuntimeError(
+                    "First part of function call result must have a not-None function response"
+                )
+            if not function_call_result.parts[0].function_response.response:
+                raise RuntimeError(
+                    "First function response must have a not-None response"
+                )
+
+            if verbose:
+                print(f"-> {function_call_result.parts[0].function_response.response}")
+
+            function_call_results.append(function_call_result.parts[0])
+
     else:
         response = f"Response: {gen_content_response.text}"
 
@@ -60,6 +81,7 @@ def main():
         args.user_prompt,
         messages,
         api_key=api_key,
+        verbose=args.verbose,
     )
     if args.verbose:
         print(
