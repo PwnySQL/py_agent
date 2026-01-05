@@ -1,9 +1,28 @@
 import os
 
+from google.genai import types
+
 from functions.common.prepare_workpath import prepare_workpath, PermittedWorkDirError
 
 
 MAX_CHARS = 10000
+
+
+schema_get_file_content = types.FunctionDeclaration(
+    name="get_file_content",
+    description=f"Read file content given a specific path to a file relative to the working directory. Output is limited to {MAX_CHARS} characters.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            # working_directory omitted intentionally
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="Path to file to read content form, relative to the working directory",
+            ),
+        },
+        required=["file_path"],
+    ),
+)
 
 
 def get_file_content(working_directory, file_path):
