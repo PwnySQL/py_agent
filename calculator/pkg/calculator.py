@@ -13,7 +13,7 @@ class Calculator:
             "^": lambda a, b: a ** b,  # Add power-of operator
             "%": lambda a, b: a % b,  # Add modulo operator
             "sqrt": lambda a: math.sqrt(a),  # Add square root operator (unary)
-            "nrt": lambda a, b: a ** (1/b), # Add nth root operator (binary)
+            "nrt": lambda base, root: base ** (1 / root), # Redefine nrt for clarity
         }
         self.precedence = {
             "+": 1,
@@ -23,7 +23,7 @@ class Calculator:
             "%": 2,  # Same precedence as multiply/divide
             "^": 3,  # Higher precedence for power-of
             "sqrt": 4, # Highest precedence for sqrt as it's a unary operator
-            "nrt": 3, # Same precedence as power-of, it's also a power operation.
+            "nrt": 3, # Same precedence as power-of
         }
         self.unary_operators = ["sqrt"]
 
@@ -36,15 +36,67 @@ class Calculator:
     def _tokenize(self, expression):
         tokens = []
         current_token = ""
-        for char in expression:
+        i = 0
+        while i < len(expression):
+            char = expression[i]
+
             if char in "() ":
                 if current_token:
                     tokens.append(current_token)
                     current_token = ""
                 if char != " ":
                     tokens.append(char)
+                i += 1
+            elif expression[i:i+3] == "nrt": # Only check for "nrt" keyword
+                if current_token: # If there's a token before 'nrt', it's an invalid format like "8 nrt 3"
+                    raise ValueError("Invalid 'nrt' format: 'nrt' must be at the beginning of the nrt expression (e.g., nrt 8,3)")
+                
+                temp_i = i + 3 # After 'nrt'
+
+                # Skip whitespace after nrt
+                while temp_i < len(expression) and expression[temp_i].isspace():
+                    temp_i += 1
+
+                # Parse base (X)
+                base_start = temp_i
+                while temp_i < len(expression) and (expression[temp_i].isdigit() or expression[temp_i] == '.'):
+                    temp_i += 1
+                base_str = expression[base_start:temp_i]
+
+                if not base_str:
+                    raise ValueError("Invalid 'nrt' format: expected base after 'nrt'")
+
+                # Skip whitespace before comma
+                while temp_i < len(expression) and expression[temp_i].isspace():
+                    temp_i += 1
+
+                # Check for comma
+                if not (temp_i < len(expression) and expression[temp_i] == ','):
+                    raise ValueError("Invalid 'nrt' format: expected ',' after base")
+                
+                temp_i += 1 # Move past comma
+
+                # Skip whitespace after comma
+                while temp_i < len(expression) and expression[temp_i].isspace():
+                    temp_i += 1
+                
+                # Parse root (Y)
+                root_start = temp_i
+                while temp_i < len(expression) and (expression[temp_i].isdigit() or expression[temp_i] == '.'):
+                    temp_i += 1
+                root_str = expression[root_start:temp_i]
+
+                if not root_str:
+                    raise ValueError("Invalid 'nrt' format: expected root after ','")
+
+                tokens.append(base_str)
+                tokens.append("nrt")
+                tokens.append(root_str)
+                i = temp_i # Update main loop index
+                current_token = "" # Reset current_token after processing
             else:
                 current_token += char
+                i += 1
         if current_token:
             tokens.append(current_token)
         return tokens

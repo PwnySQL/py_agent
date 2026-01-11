@@ -93,35 +93,35 @@ class TestCalculator(unittest.TestCase):
         self.assertEqual(result, 8)
 
     def test_nrt_simple(self):
-        result = self.calculator.evaluate("3 nrt 8")
+        result = self.calculator.evaluate("nrt 8,3")
         self.assertEqual(result, 2)
 
     def test_nrt_root_one(self):
-        result = self.calculator.evaluate("1 nrt 7")
+        result = self.calculator.evaluate("nrt 7,1")
         self.assertEqual(result, 7)
 
     def test_nrt_zero_value(self):
-        result = self.calculator.evaluate("5 nrt 0")
+        result = self.calculator.evaluate("nrt 0,5")
         self.assertEqual(result, 0)
 
     def test_nrt_decimal_root(self):
-        result = self.calculator.evaluate("2.0 nrt 4")
+        result = self.calculator.evaluate("nrt 4,2.0")
         self.assertEqual(result, 2.0)
 
     def test_nrt_expression(self):
-        result = self.calculator.evaluate("3 nrt ( 1 + 7 )") # 3 nrt 8 = 2
+        result = self.calculator.evaluate("nrt ( 1 + 7 ),3") # 3 nrt 8 = 2
         self.assertEqual(result, 2)
 
     def test_nrt_invalid_input_negative_value(self):
         with self.assertRaises(ValueError):
-            self.calculator.evaluate("3 nrt -8")
+            self.calculator.evaluate("nrt -8,3")
 
     def test_nrt_invalid_input_negative_root(self):
         with self.assertRaises(ValueError):
-            self.calculator.evaluate("-3 nrt 8")
+            self.calculator.evaluate("nrt 8,-3")
 
     def test_nrt_precedence(self):
-        result = self.calculator.evaluate("2 + 3 nrt 8 * 2") # 2 + 2 * 2 = 6
+        result = self.calculator.evaluate("2 + nrt 8,3 * 2") # 2 + 2 * 2 = 6
         self.assertEqual(result, 6)
 
 
