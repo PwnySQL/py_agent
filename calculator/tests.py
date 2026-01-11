@@ -56,6 +56,42 @@ class TestCalculator(unittest.TestCase):
         result = self.calculator.evaluate("4 * 2 ^ 3 / 2")
         self.assertEqual(result, 16)
 
+    def test_modulo_simple(self):
+        result = self.calculator.evaluate("10 % 3")
+        self.assertEqual(result, 1)
+
+    def test_modulo_zero_remainder(self):
+        result = self.calculator.evaluate("9 % 3")
+        self.assertEqual(result, 0)
+
+    def test_modulo_precedence_multiplication(self):
+        result = self.calculator.evaluate("10 + 2 % 3 * 5") # 10 + (2 % 3) * 5 = 10 + 2 * 5 = 20
+        self.assertEqual(result, 20)
+
+    def test_sqrt_simple(self):
+        result = self.calculator.evaluate("sqrt 9")
+        self.assertEqual(result, 3)
+
+    def test_sqrt_zero(self):
+        result = self.calculator.evaluate("sqrt 0")
+        self.assertEqual(result, 0)
+
+    def test_sqrt_decimal(self):
+        result = self.calculator.evaluate("sqrt 2.25")
+        self.assertEqual(result, 1.5)
+
+    def test_sqrt_expression(self):
+        result = self.calculator.evaluate("sqrt ( 4 + 5 )") # sqrt(9) = 3
+        self.assertEqual(result, 3)
+
+    def test_sqrt_invalid_input(self):
+        with self.assertRaises(ValueError):
+            self.calculator.evaluate("sqrt -9")
+
+    def test_sqrt_precedence(self):
+        result = self.calculator.evaluate("2 + sqrt 9 * 2") # 2 + 3 * 2 = 8
+        self.assertEqual(result, 8)
+
 
 if __name__ == "__main__":
     unittest.main()
