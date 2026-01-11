@@ -13,6 +13,7 @@ class Calculator:
             "^": lambda a, b: a ** b,  # Add power-of operator
             "%": lambda a, b: a % b,  # Add modulo operator
             "sqrt": lambda a: math.sqrt(a),  # Add square root operator (unary)
+            "nrt": lambda a, b: a ** (1/b), # Add nth root operator (binary)
         }
         self.precedence = {
             "+": 1,
@@ -22,6 +23,7 @@ class Calculator:
             "%": 2,  # Same precedence as multiply/divide
             "^": 3,  # Higher precedence for power-of
             "sqrt": 4, # Highest precedence for sqrt as it's a unary operator
+            "nrt": 3, # Same precedence as power-of, it's also a power operation.
         }
         self.unary_operators = ["sqrt"]
 
