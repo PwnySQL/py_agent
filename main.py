@@ -35,8 +35,16 @@ def query_gemini(
         raise RuntimeError("Cannot access gemini response metadata! API call failed")
     usage_metadata = gen_content_response.usage_metadata
 
+    # candidates are responses to the last prompt (usually one)
+    if gen_content_response.candidates is not None:
+        for cand in gen_content_response.candidates:
+            # Remember answers and tool requests and ... from the model to form
+            # a history which is passed to the model for the next iteration
+            # such that it knows what it has done to infer what to do next.
+            messages.append(cand.content)
+
     response = ""
-    function_call_results = []
+    function_call_responses = []
     if gen_content_response.function_calls is not None:
         for call in gen_content_response.function_calls:
             function_call_result = call_function(call, verbose=verbose)
@@ -56,7 +64,8 @@ def query_gemini(
             if verbose:
                 print(f"-> {function_call_result.parts[0].function_response.response}")
 
-            function_call_results.append(function_call_result.parts[0])
+            function_call_responses.append(function_call_result.parts[0])
+            messages.append(types.Content(role="user", parts=function_call_responses))
 
     else:
         response = f"Response: {gen_content_response.text}"
@@ -77,19 +86,28 @@ def main():
 
     api_key = load_api_key()
     messages = []
-    usage_metadata, response = query_gemini(
-        args.user_prompt,
-        messages,
-        api_key=api_key,
-        verbose=args.verbose,
-    )
-    if args.verbose:
-        print(
-            f"User prompt: {args.user_prompt}\n"
-            f"Prompt tokens: {usage_metadata.prompt_token_count}\n"
-            f"Response tokens: {usage_metadata.candidates_token_count}"
+    # Agent loop
+    for _ in range(20):
+        usage_metadata, response = query_gemini(
+            args.user_prompt,
+            messages,
+            api_key=api_key,
+            verbose=args.verbose,
         )
-    print(response)
+        if args.verbose:
+            print(
+                f"User prompt: {args.user_prompt}\n"
+                f"Prompt tokens: {usage_metadata.prompt_token_count}\n"
+                f"Response tokens: {usage_metadata.candidates_token_count}"
+            )
+        if response:
+            # User query is answered
+            print(response)
+            return
+    print(
+        "Aborted! No response from LLM reached in maximum number of agent iterations."
+    )
+    exit(1)
 
 
 if __name__ == "__main__":
