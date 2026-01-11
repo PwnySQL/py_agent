@@ -44,6 +44,18 @@ class TestCalculator(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.calculator.evaluate("+ 3")
 
+    def test_power_of_simple(self):
+        result = self.calculator.evaluate("2 ^ 3")
+        self.assertEqual(result, 8)
+
+    def test_power_of_precedence_multiplication(self):
+        result = self.calculator.evaluate("2 ^ 2 * 8 - 3")
+        self.assertEqual(result, 29)
+
+    def test_power_of_precedence_division(self):
+        result = self.calculator.evaluate("4 * 2 ^ 3 / 2")
+        self.assertEqual(result, 16)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -8,12 +8,14 @@ class Calculator:
             "-": lambda a, b: a - b,
             "*": lambda a, b: a * b,
             "/": lambda a, b: a / b,
+            "^": lambda a, b: a ** b,  # Add power-of operator
         }
         self.precedence = {
             "+": 1,
             "-": 1,
             "*": 2,
             "/": 2,
+            "^": 3,  # Higher precedence for power-of
         }
 
     def evaluate(self, expression):
